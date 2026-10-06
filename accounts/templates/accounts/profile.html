@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Profile | My Store{% endblock %}
+
+{% block content %}
+
+<div class="acc-page">
+
+    <header class="acc-header">
+        <div>
+            <h1 class="acc-title">My Account</h1>
+            <p class="acc-subtitle">Manage your personal information and preferences.</p>
+        </div>
+    </header>
+
+    <div class="acc-layout">
+
+       <!--SIDEBAR-->
+        <aside class="acc-sidebar">
+
+            <div class="acc-sidebar__avatar">
+                {% if user.profile.avatar %}
+                    <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}">
+                {% else %}
+                    {{ user.username|first|upper }}
+                {% endif %}
+            </div>
+
+            <h2 class="acc-sidebar__name">{{ user.get_full_name|default:user.username }}</h2>
+            <p class="acc-sidebar__email">{{ user.email|default:"No email set" }}</p>
+
+            <ul class="acc-nav">
+                <li>
+                    <a href="{% url 'accounts:profile' %}" class="is-active">
+                        <span class="icon">👤</span> Profile
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'orders:order_history' %}">
+                        <span class="icon">📦</span> My Orders
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'cart:detail' %}">
+                        <span class="icon">🛒</span> My Cart
+                    </a>
+                </li>
+                <li>
+                    <form method="POST" action="{% url 'accounts:logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="acc-nav__logout">
+                            <span class="icon">🚪</span> Logout
+                        </button>
+                    </form>
+                </li>
+            </ul>
+
+        </aside>
+
+        <!--MAIN CONTENT-->
+        
+        <div>
+
+            {% if messages %}
+                {% for msg in messages %}
+                    <div class="acc-alert acc-alert--{{ msg.tags }}">{{ msg }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST" enctype="multipart/form-data" novalidate>
+
+                {% csrf_token %}
+
+                {# ---------- Personal Information ---------- #}
+                <section class="acc-card" style="margin-bottom: 24px;">
+                    <div class="acc-card__header">
+                        <h2 class="acc-card__title">Personal Information</h2>
+                    </div>
+                    <div class="acc-card__body">
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="{{ user_form.first_name.id_for_label }}">First Name</label>
+                                <input type="text"
+                                       name="{{ user_form.first_name.name }}"
+                                       id="{{ user_form.first_name.id_for_label }}"
+                                       value="{{ user_form.first_name.value|default:'' }}"
+                                       class="form-control {% if user_form.first_name.errors %}is-invalid{% endif %}"
+                                       placeholder="John">
+                                {% for err in user_form.first_name.errors %}
+                                    <span class="error-text">{{ err }}</span>
+                                {% endfor %}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="{{ user_form.last_name.id_for_label }}">Last Name</label>
+                                <input type="text"
+                                       name="{{ user_form.last_name.name }}"
+                                       id="{{ user_form.last_name.id_for_label }}"
+                                       value="{{ user_form.last_name.value|default:'' }}"
+                                       class="form-control {% if user_form.last_name.errors %}is-invalid{% endif %}"
+                                       placeholder="Doe">
+                                {% for err in user_form.last_name.errors %}
+                                    <span class="error-text">{{ err }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ user_form.email.id_for_label }}">Email Address</label>
+                            <input type="email"
+                                   name="{{ user_form.email.name }}"
+                                   id="{{ user_form.email.id_for_label }}"
+                                   value="{{ user_form.email.value|default:'' }}"
+                                   class="form-control {% if user_form.email.errors %}is-invalid{% endif %}"
+                                   placeholder="you@example.com">
+                            {% for err in user_form.email.errors %}
+                                <span class="error-text">{{ err }}</span>
+                            {% endfor %}
+                        </div>
+
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" value="{{ user.username }}" class="form-control" disabled>
+                            <span class="form-help">Usernames cannot be changed.</span>
+                        </div>
+
+                    </div>
+                </section>
+
+                {# ---------- Contact & Address ---------- #}
+                <section class="acc-card" style="margin-bottom: 24px;">
+                    <div class="acc-card__header">
+                        <h2 class="acc-card__title">Contact &amp; Address</h2>
+                    </div>
+                    <div class="acc-card__body">
+
+                        <div class="form-group">
+                            <label for="{{ profile_form.phone.id_for_label }}">Phone Number</label>
+                            <input type="text"
+                                   name="{{ profile_form.phone.name }}"
+                                   id="{{ profile_form.phone.id_for_label }}"
+                                   value="{{ profile_form.phone.value|default:'' }}"
+                                   class="form-control {% if profile_form.phone.errors %}is-invalid{% endif %}"
+                                   placeholder="+91 98765 43210">
+                            {% for err in profile_form.phone.errors %}
+                                <span class="error-text">{{ err }}</span>
+                            {% endfor %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ profile_form.address.id_for_label }}">Street Address</label>
+                            <input type="text"
+                                   name="{{ profile_form.address.name }}"
+                                   id="{{ profile_form.address.id_for_label }}"
+                                   value="{{ profile_form.address.value|default:'' }}"
+                                   class="form-control {% if profile_form.address.errors %}is-invalid{% endif %}"
+                                   placeholder="123 Main Street, Apt 4B">
+                            {% for err in profile_form.address.errors %}
+                                <span class="error-text">{{ err }}</span>
+                            {% endfor %}
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="{{ profile_form.city.id_for_label }}">City</label>
+                                <input type="text"
+                                       name="{{ profile_form.city.name }}"
+                                       id="{{ profile_form.city.id_for_label }}"
+                                       value="{{ profile_form.city.value|default:'' }}"
+                                       class="form-control"
+                                       placeholder="Mumbai">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="{{ profile_form.postal_code.id_for_label }}">Postal Code</label>
+                                <input type="text"
+                                       name="{{ profile_form.postal_code.name }}"
+                                       id="{{ profile_form.postal_code.id_for_label }}"
+                                       value="{{ profile_form.postal_code.value|default:'' }}"
+                                       class="form-control"
+                                       placeholder="400001">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ profile_form.country.id_for_label }}">Country</label>
+                            <input type="text"
+                                   name="{{ profile_form.country.name }}"
+                                   id="{{ profile_form.country.id_for_label }}"
+                                   value="{{ profile_form.country.value|default:'India' }}"
+                                   class="form-control"
+                                   placeholder="India">
+                        </div>
+
+                    </div>
+                </section>
+
+                {# ---------- About ---------- #}
+                <section class="acc-card" style="margin-bottom: 24px;">
+                    <div class="acc-card__header">
+                        <h2 class="acc-card__title">About You</h2>
+                    </div>
+                    <div class="acc-card__body">
+
+                        <div class="form-group">
+                            <label for="{{ profile_form.avatar.id_for_label }}">Profile Picture</label>
+                            <input type="file"
+                                   name="{{ profile_form.avatar.name }}"
+                                   id="{{ profile_form.avatar.id_for_label }}"
+                                   class="form-control"
+                                   accept="image/*">
+                            <span class="form-help">JPG or PNG · Max 2 MB.</span>
+                            {% for err in profile_form.avatar.errors %}
+                                <span class="error-text">{{ err }}</span>
+                            {% endfor %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ profile_form.bio.id_for_label }}">Bio</label>
+                            <textarea name="{{ profile_form.bio.name }}"
+                                      id="{{ profile_form.bio.id_for_label }}"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Tell us a bit about yourself...">{{ profile_form.bio.value|default:'' }}</textarea>
+                            {% for err in profile_form.bio.errors %}
+                                <span class="error-text">{{ err }}</span>
+                            {% endfor %}
+                        </div>
+
+                    </div>
+                </section>
+
+                {# ---------- Actions ---------- #}
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <a href="{% url 'store:home' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+
+            </form>
+
+            {# ---------- Danger zone ---------- #}
+            <section class="acc-card" style="margin-top: 32px; border-color: #fecaca;">
+                <div class="acc-card__header" style="background: #fef2f2; border-color: #fecaca;">
+                    <h2 class="acc-card__title" style="color: #991b1b;">Danger Zone</h2>
+                </div>
+                <div class="acc-card__body">
+                    <p class="text-muted" style="margin: 0 0 16px; font-size: 0.9rem;">
+                        Once you delete your account, all data will be permanently removed. This action cannot be undone.
+                    </p>
+                    <form method="POST"
+                          action="{% url 'accounts:delete' %}"
+                          onsubmit="return confirm('Are you absolutely sure? This cannot be undone.');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Delete My Account</button>
+                    </form>
+                </div>
+            </section>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

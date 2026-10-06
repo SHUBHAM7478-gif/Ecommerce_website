@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Orders | My Store{% endblock %}
+
+{% block content %}
+
+<div class="acc-page">
+
+    <header class="acc-header">
+        <div>
+            <h1 class="acc-title">My Orders</h1>
+            <p class="acc-subtitle">
+                {% if orders %}
+                    {{ orders|length }} order{{ orders|length|pluralize }} placed
+                {% else %}
+                    No orders yet
+                {% endif %}
+            </p>
+        </div>
+        {% if orders %}
+            <a href="{% url 'store:product_list' %}" class="btn btn-secondary">
+                + New Order
+            </a>
+        {% endif %}
+    </header>
+
+    {% if orders %}
+
+        {# ---------- Status filter tabs ---------- #}
+        <div class="order-tabs">
+            <a href="?" class="order-tab {% if not request.GET.status %}is-active{% endif %}">All</a>
+            <a href="?status=Pending"   class="order-tab {% if request.GET.status == 'Pending' %}is-active{% endif %}">Pending</a>
+            <a href="?status=Shipped"   class="order-tab {% if request.GET.status == 'Shipped' %}is-active{% endif %}">Shipped</a>
+            <a href="?status=Delivered" class="order-tab {% if request.GET.status == 'Delivered' %}is-active{% endif %}">Delivered</a>
+            <a href="?status=Cancelled" class="order-tab {% if request.GET.status == 'Cancelled' %}is-active{% endif %}">Cancelled</a>
+        </div>
+
+        {# ---------- Orders list ---------- #}
+        <div class="orders-list">
+            {% for order in orders %}
+                <article class="order-card">
+
+                    <header class="order-card__head">
+                        <div>
+                            <p class="order-card__label">Order</p>
+                            <p class="order-card__num">#{{ order.id|stringformat:"06d" }}</p>
+                        </div>
+                        <div>
+                            <p class="order-card__label">Placed</p>
+                            <p class="order-card__val">{{ order.created_at|date:"M d, Y" }}</p>
+                        </div>
+                        <div>
+                            <p class="order-card__label">Total</p>
+                            <p class="order-card__val order-card__total">₹{{ order.get_total }}</p>
+                        </div>
+                        <div>
+                            <span class="badge badge--{{ order.status|lower }}">{{ order.status }}</span>
+                        </div>
+                    </header>
+
+                    <div class="order-card__body">
+                        <div class="order-card__thumbs">
+                            {% for item in order.items.all|slice:":4" %}
+                                <div class="order-card__thumb">
+                                    {% if item.product.image %}
+                                        <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}">
+                                    {% else %}
+                                        <img src="{% static 'store/images/placeholder.png' %}" alt="{{ item.product_name }}">
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                            {% if order.items.count > 4 %}
+                                <div class="order-card__thumb order-card__thumb--more">
+                                    +{{ order.items.count|add:"-4" }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="order-card__meta">
+                            <p class="order-card__items">
+                                {{ order.items.count }} item{{ order.items.count|pluralize }}
+                            </p>
+                            <p class="order-card__ship">
+                                📍 Shipping to {{ order.city }}, {{ order.country }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <footer class="order-card__foot">
+                        <a href="{% url 'orders:order_detail' order.id %}" class="btn btn-secondary btn-sm">
+                            View Details
+                        </a>
+                        <a href="{% url 'store:product_list' %}" class="btn btn-primary btn-sm">
+                            Buy Again
+                        </a>
+                    </footer>
+
+                </article>
+            {% endfor %}
+        </div>
+
+    {% else %}
+
+        <div class="acc-empty">
+            <div class="acc-empty__icon">📦</div>
+            <h2 class="acc-empty__title">No orders yet</h2>
+            <p class="acc-empty__text">
+                When you place your first order, it will show up here.
+            </p>
+            <a href="{% url 'store:product_list' %}" class="btn btn-primary btn-lg">
+                Start Shopping
+            </a>
+        </div>
+
+    {% endif %}
+
+</div>
+
+<style>
+/* ---------- Status tabs ---------- */
+.order-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 24px;
+    padding: 4px;
+    background: var(--acc-soft);
+    border-radius: 10px;
+    overflow-x: auto;
+}
+.order-tab {
+    padding: 9px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--acc-muted);
+    white-space: nowrap;
+    transition: background .15s, color .15s;
+}
+.order-tab:hover { color: var(--acc-text); background: #fff; }
+.order-tab.is-active {
+    background: #fff;
+    color: var(--acc-primary);
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+
+/* ---------- Orders list ---------- */
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ---------- Order card ---------- */
+.order-card {
+    background: #fff;
+    border: 1px solid var(--acc-border);
+    border-radius: var(--acc-radius);
+    box-shadow: var(--acc-shadow);
+    overflow: hidden;
+    transition: box-shadow .15s, border-color .15s;
+}
+.order-card:hover {
+    box-shadow: var(--acc-shadow-md);
+    border-color: #d1d5db;
+}
+
+.order-card__head {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 20px;
+    align-items: center;
+    padding: 18px 24px;
+    background: var(--acc-soft);
+    border-bottom: 1px solid var(--acc-border);
+}
+.order-card__label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--acc-muted);
+    margin: 0 0 4px;
+    font-weight: 600;
+}
+.order-card__num {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--acc-primary);
+    margin: 0;
+}
+.order-card__val {
+    font-size: 0.9rem;
+    color: var(--acc-text);
+    margin: 0;
+    font-weight: 500;
+}
+.order-card__total { font-weight: 700; font-size: 1rem; }
+
+.order-card__body {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 24px;
+}
+
+.order-card__thumbs {
+    display: flex;
+    gap: 8px;
+}
+.order-card__thumb {
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--acc-soft);
+    border: 1px solid var(--acc-border);
+    flex-shrink: 0;
+}
+.order-card__thumb img { width: 100%; height: 100%; object-fit: cover; }
+.order-card__thumb--more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef2ff;
+    color: var(--acc-primary);
+    font-weight: 700;
+    font-size: 0.85rem;
+    border-color: #c7d2fe;
+}
+
+.order-card__meta { text-align: right; }
+.order-card__items {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--acc-text);
+    margin: 0 0 4px;
+}
+.order-card__ship {
+    font-size: 0.82rem;
+    color: var(--acc-muted);
+    margin: 0;
+}
+
+.order-card__foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px 24px;
+    border-top: 1px solid var(--acc-border);
+    background: #fcfcfd;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+    .order-card__head {
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+    .order-card__body {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .order-card__meta { text-align: left; }
+    .order-card__foot {
+        flex-direction: column;
+    }
+    .order-card__foot .btn { width: 100%; }
+}
+</style>
+
+{% endblock %}

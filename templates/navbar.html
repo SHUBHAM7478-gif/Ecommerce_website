@@ -1,0 +1,82 @@
+{% load static %}
+<header class="site-header">
+    <div class="site-header__inner">
+
+        {# ---------- Logo ---------- #}
+        <a href="{% url 'store:home' %}" class="site-header__logo">
+            🛍️ <span>My Store</span>
+        </a>
+
+        {# ---------- Main nav ---------- #}
+        <nav class="site-header__nav">
+            <a href="{% url 'store:home' %}" class="nav-link">Home</a>
+            <a href="{% url 'store:product_list' %}" class="nav-link">Products</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'orders:order_history' %}" class="nav-link">My Orders</a>
+            {% endif %}
+        </nav>
+
+        {# ---------- Search (compact) ---------- #}
+        <form action="{% url 'store:product_list' %}" method="GET" class="site-header__search">
+            <input type="text" name="q" placeholder="Search products..." value="{{ request.GET.q|default:'' }}">
+        </form>
+
+        {# ---------- Right side: cart + account ---------- #}
+        <div class="site-header__actions">
+
+            {# ---------- Cart ---------- #}
+            <a href="{% url 'cart:detail' %}" class="nav-cart" aria-label="Cart">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+                <span class="cart-badge" {% if not cart_count %}style="display:none"{% endif %}>{{ cart_count|default:0 }}</span>
+            </a>
+
+            {# ---------- Auth section ---------- #}
+            {% if user.is_authenticated %}
+
+                <div class="nav-user" id="navUser">
+                    <button type="button" class="nav-user__trigger" id="navUserTrigger">
+                        <span class="nav-user__avatar">{{ user.username|first|upper }}</span>
+                        <span class="nav-user__name">{{ user.username }}</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+
+                    <div class="nav-user__menu" id="navUserMenu">
+                        <a href="{% url 'accounts:profile' %}" class="nav-user__link">
+                            👤 My Profile
+                        </a>
+                        <a href="{% url 'orders:order_history' %}" class="nav-user__link">
+                            📦 My Orders
+                        </a>
+                        <a href="{% url 'cart:detail' %}" class="nav-user__link">
+                            🛒 My Cart
+                        </a>
+                        <div class="nav-user__divider"></div>
+
+                        {# ---------- LOGOUT — must be POST in Django 5+ ---------- #}
+                        <form method="POST" action="{% url 'accounts:logout' %}" class="nav-user__logout-form">
+                            {% csrf_token %}
+                            <button type="submit" class="nav-user__link nav-user__link--danger">
+                                🚪 Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            {% else %}
+
+                <a href="{% url 'accounts:login' %}" class="btn btn-ghost">Login</a>
+                <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-sm">Sign Up</a>
+
+            {% endif %}
+        </div>
+
+    </div>
+</header>

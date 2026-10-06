@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Cart | My Store{% endblock %}
+
+{% block content %}
+
+<div class="acc-page">
+
+    <header class="acc-header">
+        <div>
+            <h1 class="acc-title">My Cart</h1>
+            <p class="acc-subtitle">
+                {% if cart.is_empty %}
+                    Your cart is empty
+                {% else %}
+                    {{ cart.total_items }} item{{ cart.total_items|pluralize }} · ₹{{ cart.subtotal }}
+                {% endif %}
+            </p>
+        </div>
+        {% if not cart.is_empty %}
+            <a href="{% url 'store:product_list' %}" class="btn btn-secondary">
+                ← Continue Shopping
+            </a>
+        {% endif %}
+    </header>
+
+    {% if cart.is_empty %}
+
+        <!-- ============================================================
+           Empty state
+           ============================================================ -->
+        <div class="acc-empty">
+            <div class="acc-empty__icon">🛒</div>
+            <h2 class="acc-empty__title">Your cart is empty</h2>
+            <p class="acc-empty__text">Add something to get started.</p>
+            <a href="{% url 'store:product_list' %}" class="btn btn-primary btn-lg">
+                Browse Products
+            </a>
+        </div>
+
+    {% else %}
+
+        <div class="acc-layout acc-layout--wide">
+
+            <!-- ============================================================
+               LEFT: items
+               ============================================================ -->
+            <div>
+
+                <div class="acc-card">
+                    <div class="cart-head">
+                        <span class="col-product">Product</span>
+                        <span class="col-price">Price</span>
+                        <span class="col-qty">Quantity</span>
+                        <span class="col-sub">Subtotal</span>
+                        <span class="col-act"></span>
+                    </div>
+
+                    {% for row in rows %}
+                        {% include 'cart/partials/cart_row.html' with item=row.item form=row.form %}
+                    {% endfor %}
+
+                    <div class="cart-foot">
+                        <a href="{% url 'store:product_list' %}" class="btn btn-ghost">
+                            ← Continue Shopping
+                        </a>
+                        <form method="POST" action="{% url 'cart:clear' %}"
+                              onsubmit="return confirm('Remove all items from your cart?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-link" style="color: var(--acc-danger);">
+                                🗑 Clear Cart
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+
+            
+               <!------------RIGHT: summary---------- -->
+               
+            <aside class="cart-sum">
+                <h2 class="cart-sum__title">Order Summary</h2>
+
+                <div class="cart-sum__row">
+                    <span>Subtotal ({{ cart.total_items }} item{{ cart.total_items|pluralize }})</span>
+                    <span>₹{{ cart.subtotal }}</span>
+                </div>
+                <div class="cart-sum__row">
+                    <span>Shipping</span>
+                    <span class="text-success">Free</span>
+                </div>
+
+                <div class="acc-divider"></div>
+
+                <div class="cart-sum__row cart-sum__total">
+                    <span>Total</span>
+                    <span>₹{{ cart.subtotal }}</span>
+                </div>
+
+                <a href="{% url 'orders:checkout' %}" class="btn btn-primary btn-lg btn-block" style="margin-top: 16px;">
+                    Proceed to Checkout →
+                </a>
+
+                <div class="cart-trust">
+                    <div class="cart-trust__item">
+                        <span class="cart-trust__icon">🔒</span>
+                        <span>Secure</span>
+                    </div>
+                    <div class="cart-trust__item">
+                        <span class="cart-trust__icon">🚚</span>
+                        <span>Free shipping</span>
+                    </div>
+                    <div class="cart-trust__item">
+                        <span class="cart-trust__icon">↩</span>
+                        <span>7-day returns</span>
+                    </div>
+                </div>
+            </aside>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+<style>
+/* ---------- Cart header row ---------- */
+.cart-head {
+    display: grid;
+    grid-template-columns: 3fr 1fr 1.3fr 1fr 50px;
+    gap: 12px;
+    padding: 14px 22px;
+    background: var(--acc-soft);
+    border-bottom: 1px solid var(--acc-border);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--acc-muted);
+    font-weight: 600;
+}
+
+.cart-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 22px;
+    border-top: 1px solid var(--acc-border);
+    background: #fcfcfd;
+}
+
+/* ---------- Summary panel ---------- */
+.cart-sum {
+    background: #fff;
+    border: 1px solid var(--acc-border);
+    border-radius: var(--acc-radius);
+    box-shadow: var(--acc-shadow);
+    padding: 24px;
+    position: sticky;
+    top: 88px;
+}
+.cart-sum__title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--acc-text);
+    margin: 0 0 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--acc-border);
+}
+.cart-sum__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 7px 0;
+    font-size: 0.92rem;
+    color: #374151;
+}
+.cart-sum__total {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--acc-text);
+    padding-top: 12px;
+}
+
+/* ---------- Trust badges ---------- */
+.cart-trust {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid var(--acc-border);
+    gap: 6px;
+}
+.cart-trust__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    font-size: 0.72rem;
+    color: var(--acc-muted);
+    text-align: center;
+}
+.cart-trust__icon { font-size: 1.05rem; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+    .cart-sum { position: static; }
+}
+@media (max-width: 640px) {
+    .cart-head { display: none; }
+    .cart-foot { flex-direction: column; gap: 12px; }
+    .cart-foot .btn,
+    .cart-foot form { width: 100%; }
+}
+</style>
+
+{% endblock %}

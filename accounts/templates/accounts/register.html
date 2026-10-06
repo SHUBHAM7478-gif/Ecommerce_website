@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register | My Store{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+
+        <h2 class="auth-title">Create Your Account</h2>
+        <p class="auth-subtitle">Join us and start shopping in seconds.</p>
+
+        {# ---------- Non-field errors (e.g. "passwords don't match") ---------- #}
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for err in form.non_field_errors %}
+                    <p>{{ err }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'accounts:register' %}" novalidate>
+            {% csrf_token %}
+
+            {# ---------- Username ---------- #}
+            <div class="form-group">
+                <label for="{{ form.username.id_for_label }}">Username</label>
+                <input
+                    type="text"
+                    name="{{ form.username.name }}"
+                    id="{{ form.username.id_for_label }}"
+                    value="{{ form.username.value|default:'' }}"
+                    class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                    placeholder="Choose a username"
+                    autocomplete="username"
+                    required>
+                {% for err in form.username.errors %}
+                    <span class="error-text">{{ err }}</span>
+                {% endfor %}
+                <small class="form-help">
+                    150 characters max. Letters, digits and @/./+/-/_ only.
+                </small>
+            </div>
+
+            {# ---------- Email ---------- #}
+            <div class="form-group">
+                <label for="{{ form.email.id_for_label }}">Email</label>
+                <input
+                    type="email"
+                    name="{{ form.email.name }}"
+                    id="{{ form.email.id_for_label }}"
+                    value="{{ form.email.value|default:'' }}"
+                    class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                    placeholder="you@example.com"
+                    autocomplete="email"
+                    required>
+                {% for err in form.email.errors %}
+                    <span class="error-text">{{ err }}</span>
+                {% endfor %}
+            </div>
+
+            {# ---------- Password 1 ---------- #}
+            <div class="form-group">
+                <label for="{{ form.password1.id_for_label }}">Password</label>
+                <input
+                    type="password"
+                    name="{{ form.password1.name }}"
+                    id="{{ form.password1.id_for_label }}"
+                    class="form-control {% if form.password1.errors %}is-invalid{% endif %}"
+                    placeholder="Enter a strong password"
+                    autocomplete="new-password"
+                    required>
+                {% for err in form.password1.errors %}
+                    <span class="error-text">{{ err }}</span>
+                {% endfor %}
+                <small class="form-help">
+                    At least 8 characters. Cannot be entirely numeric.
+                </small>
+            </div>
+
+            {# ---------- Password 2 ---------- #}
+            <div class="form-group">
+                <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
+                <input
+                    type="password"
+                    name="{{ form.password2.name }}"
+                    id="{{ form.password2.id_for_label }}"
+                    class="form-control {% if form.password2.errors %}is-invalid{% endif %}"
+                    placeholder="Re-enter your password"
+                    autocomplete="new-password"
+                    required>
+                {% for err in form.password2.errors %}
+                    <span class="error-text">{{ err }}</span>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+        </form>
+
+        <p class="auth-footer">
+            Already have an account?
+            <a href="{% url 'accounts:login' %}">Login here</a>
+        </p>
+
+    </div>
+</div>
+{% endblock %}

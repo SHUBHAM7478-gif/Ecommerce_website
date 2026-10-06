@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Logout | My Store{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card auth-card--center">
+
+        <h2 class="auth-title">Log Out?</h2>
+        <p class="auth-subtitle">
+            Are you sure you want to log out of your account?
+        </p>
+
+        <form method="POST" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <div class="form-row-buttons">
+                <button type="submit" class="btn btn-danger">Yes, Log Me Out</button>
+                <a href="{% url 'store:home' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}

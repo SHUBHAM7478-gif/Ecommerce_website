@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home | My Store{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'store/css/store.css' %}">
+{% endblock %}
+
+{% block content %}
+
+{# ---------- Hero ---------- #}
+<section class="hero">
+    <div class="hero__content">
+        <h1 class="hero__title">Shop the Latest Picks</h1>
+        <p class="hero__subtitle">
+            Curated products, fair prices, fast delivery. Built for people who value quality.
+        </p>
+        <a href="{% url 'store:product_list' %}" class="btn btn-primary btn-lg">Browse Products</a>
+    </div>
+</section>
+
+{# ---------- Featured categories ---------- #}
+{% if categories %}
+<section class="section">
+    <div class="section__header">
+        <h2 class="section__title">Shop by Category</h2>
+    </div>
+
+    <div class="category-grid">
+        {% for category in categories %}
+            <a href="{% url 'store:product_list' %}?category={{ category.slug }}" class="category-card">
+                <h3>{{ category.name }}</h3>
+                {% if category.description %}
+                    <p>{{ category.description|truncatewords:12 }}</p>
+                {% endif %}
+            </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{# ---------- Featured products ---------- #}
+{% if featured_products %}
+<section class="section">
+    <div class="section__header">
+        <h2 class="section__title">Featured Products</h2>
+        <a href="{% url 'store:product_list' %}" class="section__link">View all →</a>
+    </div>
+
+    <div class="product-grid">
+        {% for product in featured_products %}
+            {% include 'store/partials/product_card.html' with product=product %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{# ---------- New arrivals ---------- #}
+{% if new_arrivals %}
+<section class="section">
+    <div class="section__header">
+        <h2 class="section__title">New Arrivals</h2>
+    </div>
+
+    <div class="product-grid">
+        {% for product in new_arrivals %}
+            {% include 'store/partials/product_card.html' with product=product %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{# ---------- Empty state ---------- #}
+{% if not featured_products and not new_arrivals %}
+<section class="section">
+    <div class="empty-state">
+        <h2>No products yet</h2>
+        <p>Check back soon — we're stocking the shelves.</p>
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}

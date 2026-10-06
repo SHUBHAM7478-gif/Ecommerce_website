@@ -1,0 +1,468 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout | My Store{% endblock %}
+
+{% block content %}
+
+<div class="acc-page">
+
+    <!-- Progress stepper -->
+    <div class="checkout-steps">
+        <div class="checkout-step checkout-step--done">
+            <span class="checkout-step__num">✓</span>
+            <span class="checkout-step__label">Cart</span>
+        </div>
+        <span class="checkout-step__line checkout-step__line--done"></span>
+        <div class="checkout-step checkout-step--active">
+            <span class="checkout-step__num">2</span>
+            <span class="checkout-step__label">Shipping</span>
+        </div>
+        <span class="checkout-step__line"></span>
+        <div class="checkout-step">
+            <span class="checkout-step__num">3</span>
+            <span class="checkout-step__label">Confirm</span>
+        </div>
+    </div>
+
+    <header class="acc-header">
+        <div>
+            <h1 class="acc-title">Checkout</h1>
+            <p class="acc-subtitle">Almost there — just a few details and you're done.</p>
+        </div>
+    </header>
+
+    {% if form.non_field_errors %}
+        <div class="acc-alert acc-alert--error">
+            {% for err in form.non_field_errors %}{{ err }}{% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'orders:checkout' %}" novalidate>
+        {% csrf_token %}
+
+        <div class="checkout-layout">
+
+            <!-- MAIN: Shipping form -->
+            <div class="checkout-main">
+
+                <!-- Contact -->
+                <section class="acc-card">
+                    <div class="acc-card__header">
+                        <h2 class="acc-card__title">1 · Contact Information</h2>
+                    </div>
+                    <div class="acc-card__body">
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="{{ form.full_name.id_for_label }}">Full Name</label>
+                                <input type="text"
+                                       name="{{ form.full_name.name }}"
+                                       id="{{ form.full_name.id_for_label }}"
+                                       value="{{ form.full_name.value|default:user.get_full_name }}"
+                                       class="form-control {% if form.full_name.errors %}is-invalid{% endif %}"
+                                       placeholder="John Doe"
+                                       autocomplete="name">
+                                {% for err in form.full_name.errors %}
+                                    <span class="error-text">{{ err }}</span>
+                                {% endfor %}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="{{ form.email.id_for_label }}">Email</label>
+                                <input type="email"
+                                       name="{{ form.email.name }}"
+                                       id="{{ form.email.id_for_label }}"
+                                       value="{{ form.email.value|default:user.email }}"
+                                       class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                                       placeholder="you@example.com"
+                                       autocomplete="email">
+                                {% for err in form.email.errors %}
+                                    <span class="error-text">{{ err }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- Shipping address -->
+                <section class="acc-card">
+                    <div class="acc-card__header">
+                        <h2 class="acc-card__title">2 · Shipping Address</h2>
+                    </div>
+                    <div class="acc-card__body">
+
+                        <div class="form-group">
+                            <label for="{{ form.address.id_for_label }}">Street Address</label>
+                            <input type="text"
+                                   name="{{ form.address.name }}"
+                                   id="{{ form.address.id_for_label }}"
+                                   value="{{ form.address.value|default:'' }}"
+                                   class="form-control {% if form.address.errors %}is-invalid{% endif %}"
+                                   placeholder="123 Main Street, Apt 4B"
+                                   autocomplete="street-address">
+                            {% for err in form.address.errors %}
+                                <span class="error-text">{{ err }}</span>
+                            {% endfor %}
+                        </div>
+
+                        <div class="form-row form-row--three">
+                            <div class="form-group">
+                                <label for="{{ form.city.id_for_label }}">City</label>
+                                <input type="text"
+                                       name="{{ form.city.name }}"
+                                       id="{{ form.city.id_for_label }}"
+                                       value="{{ form.city.value|default:'' }}"
+                                       class="form-control"
+                                       placeholder="Mumbai"
+                                       autocomplete="address-level2">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="{{ form.postal_code.id_for_label }}">Postal Code</label>
+                                <input type="text"
+                                       name="{{ form.postal_code.name }}"
+                                       id="{{ form.postal_code.id_for_label }}"
+                                       value="{{ form.postal_code.value|default:'' }}"
+                                       class="form-control"
+                                       placeholder="400001"
+                                       autocomplete="postal-code">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="{{ form.country.id_for_label }}">Country</label>
+                                <input type="text"
+                                       name="{{ form.country.name }}"
+                                       id="{{ form.country.id_for_label }}"
+                                       value="{{ form.country.value|default:'India' }}"
+                                       class="form-control"
+                                       placeholder="India"
+                                       autocomplete="country-name">
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- Payment -->
+                <section class="acc-card">
+                    <div class="acc-card__header">
+                        <h2 class="acc-card__title">3 · Payment Method</h2>
+                    </div>
+                    <div class="acc-card__body">
+
+                        <div class="payment-options">
+                            <label class="payment-option">
+                                <input type="radio" name="payment_method" value="cod" checked>
+                                <div class="payment-option__body">
+                                    <strong>Cash on Delivery</strong>
+                                    <small>Pay when your order arrives.</small>
+                                </div>
+                            </label>
+
+                            <label class="payment-option payment-option--disabled">
+                                <input type="radio" name="payment_method" value="card" disabled>
+                                <div class="payment-option__body">
+                                    <strong>Card / UPI</strong>
+                                    <small>Coming soon.</small>
+                                </div>
+                            </label>
+                        </div>
+
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- SIDE: Order summary -->
+            <aside class="checkout-summary">
+                <h2 class="checkout-summary__title">Order Summary</h2>
+
+                <ul class="checkout-summary__items">
+                    {% for item in cart.items.all %}
+                        <li class="checkout-summary__item">
+                            <div class="checkout-summary__thumb">
+                                {% if item.product.image %}
+                                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                                {% else %}
+                                    <img src="{% static 'store/images/placeholder.png' %}" alt="{{ item.product.name }}">
+                                {% endif %}
+                                <span class="checkout-summary__qty">{{ item.quantity }}</span>
+                            </div>
+                            <div class="checkout-summary__info">
+                                <p class="checkout-summary__name">{{ item.product.name }}</p>
+                                <p class="checkout-summary__meta">₹{{ item.product.current_price }} each</p>
+                            </div>
+                            <div class="checkout-summary__price">₹{{ item.subtotal }}</div>
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <div class="checkout-summary__divider"></div>
+
+                <div class="checkout-summary__row">
+                    <span>Subtotal</span>
+                    <span>₹{{ cart.subtotal }}</span>
+                </div>
+                <div class="checkout-summary__row">
+                    <span>Shipping</span>
+                    <span class="text-success">Free</span>
+                </div>
+
+                <div class="checkout-summary__divider"></div>
+
+                <div class="checkout-summary__row checkout-summary__row--total">
+                    <span>Total</span>
+                    <span>₹{{ cart.subtotal }}</span>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg btn-block checkout-btn">
+                    Place Order · ₹{{ cart.subtotal }}
+                </button>
+
+                <a href="{% url 'cart:detail' %}" class="checkout-back">← Back to cart</a>
+
+                <p class="checkout-note">
+                    By placing this order you agree to our Terms &amp; Conditions.
+                </p>
+            </aside>
+
+        </div>
+    </form>
+
+</div>
+
+<style>
+/* ---------- Progress stepper ---------- */
+.checkout-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 32px;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid var(--acc-border);
+    border-radius: var(--acc-radius);
+    box-shadow: var(--acc-shadow);
+}
+.checkout-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--acc-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+.checkout-step--active { color: var(--acc-primary); }
+.checkout-step--done   { color: var(--acc-success); }
+.checkout-step__num {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--acc-soft);
+    color: var(--acc-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.checkout-step--active .checkout-step__num { background: var(--acc-primary); color: #fff; }
+.checkout-step--done   .checkout-step__num { background: var(--acc-success); color: #fff; }
+.checkout-step__line {
+    flex: 1;
+    height: 2px;
+    background: var(--acc-border);
+    max-width: 80px;
+}
+.checkout-step__line--done { background: var(--acc-success); }
+
+/* ---------- Layout ---------- */
+.checkout-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 24px;
+    align-items: start;
+}
+.checkout-main {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+}
+.form-row--three { grid-template-columns: 1fr 1fr 1fr; }
+
+/* ---------- Payment options ---------- */
+.payment-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.payment-option {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    padding: 16px;
+    border: 2px solid var(--acc-border);
+    border-radius: var(--acc-radius-sm);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+.payment-option:hover { border-color: #a5b4fc; background: #f8f7ff; }
+.payment-option input[type="radio"] {
+    accent-color: var(--acc-primary);
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+.payment-option__body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.payment-option__body strong { font-size: 0.95rem; color: var(--acc-text); }
+.payment-option__body small { color: var(--acc-muted); font-size: 0.82rem; }
+.payment-option--disabled { opacity: 0.5; cursor: not-allowed; }
+.payment-option--disabled:hover { border-color: var(--acc-border); background: transparent; }
+
+/* ---------- Summary panel ---------- */
+.checkout-summary {
+    background: #fff;
+    border: 1px solid var(--acc-border);
+    border-radius: var(--acc-radius);
+    box-shadow: var(--acc-shadow);
+    padding: 24px;
+    position: sticky;
+    top: 84px;
+}
+.checkout-summary__title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--acc-text);
+    margin: 0 0 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--acc-border);
+}
+
+.checkout-summary__items {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 16px;
+    max-height: 320px;
+    overflow-y: auto;
+}
+.checkout-summary__item {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+.checkout-summary__item:last-child { border-bottom: none; }
+
+.checkout-summary__thumb {
+    position: relative;
+    width: 52px;
+    height: 52px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--acc-soft);
+}
+.checkout-summary__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.checkout-summary__qty {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: var(--acc-primary);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #fff;
+}
+.checkout-summary__info { min-width: 0; }
+.checkout-summary__name {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--acc-text);
+    margin: 0 0 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.checkout-summary__meta {
+    font-size: 0.78rem;
+    color: var(--acc-muted);
+    margin: 0;
+}
+.checkout-summary__price {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--acc-text);
+}
+
+.checkout-summary__divider {
+    height: 1px;
+    background: var(--acc-border);
+    margin: 14px 0;
+}
+.checkout-summary__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 7px 0;
+    font-size: 0.92rem;
+    color: #374151;
+}
+.checkout-summary__row--total {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--acc-text);
+}
+
+.checkout-btn { margin-top: 18px; }
+.checkout-back {
+    display: block;
+    text-align: center;
+    margin-top: 12px;
+    color: var(--acc-primary);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+.checkout-back:hover { text-decoration: underline; }
+.checkout-note {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--acc-muted);
+    margin: 16px 0 0;
+    line-height: 1.5;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+    .checkout-layout { grid-template-columns: 1fr; }
+    .checkout-summary { position: static; }
+}
+@media (max-width: 640px) {
+    .form-row,
+    .form-row--three { grid-template-columns: 1fr; }
+    .checkout-steps { flex-wrap: wrap; gap: 8px; }
+    .checkout-step__label { display: none; }
+    .checkout-step__line { max-width: 40px; }
+}
+</style>
+
+{% endblock %}

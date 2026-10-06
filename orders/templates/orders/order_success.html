@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order Confirmed | My Store{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'orders/css/orders.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="order-success-page">
+
+    <div class="success-card">
+
+        <div class="success-icon">✓</div>
+
+        <h1 class="success-title">Thank you for your order!</h1>
+        <p class="success-subtitle">
+            Your order has been placed successfully. We've sent a confirmation to
+            <strong>{{ order.email }}</strong>.
+        </p>
+
+        <div class="success-details">
+            <div class="detail-row">
+                <span class="detail-label">Order Number</span>
+                <span class="detail-value">#{{ order.id|stringformat:"06d" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Order Date</span>
+                <span class="detail-value">{{ order.created_at|date:"M d, Y · H:i" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Total Amount</span>
+                <span class="detail-value detail-value--total">₹{{ order.get_total }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Status</span>
+                <span class="badge badge--{{ order.status|lower }}">{{ order.status }}</span>
+            </div>
+        </div>
+
+        {# ---------- Order items preview ---------- #}
+        <div class="success-items">
+            <h3 class="success-items__heading">Items in this order</h3>
+            <ul class="success-items__list">
+                {% for item in order.items.all %}
+                    <li class="success-item">
+                        <span class="success-item__name">
+                            {{ item.quantity }} × {{ item.product.name }}
+                        </span>
+                        <span class="success-item__price">₹{{ item.subtotal }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        {# ---------- Shipping address ---------- #}
+        <div class="success-address">
+            <h3 class="success-address__heading">Shipping to</h3>
+            <p>
+                <strong>{{ order.full_name }}</strong><br>
+                {{ order.address }}<br>
+                {{ order.city }}, {{ order.postal_code }}<br>
+                {{ order.country }}
+            </p>
+        </div>
+
+        {# ---------- Actions ---------- #}
+        <div class="success-actions">
+            <a href="{% url 'orders:order_detail' order.id %}" class="btn btn-primary">
+                View Order Details
+            </a>
+            <a href="{% url 'store:product_list' %}" class="btn btn-secondary">
+                Continue Shopping
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

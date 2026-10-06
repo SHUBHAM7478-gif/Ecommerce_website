@@ -1,0 +1,52 @@
+{% load static %}
+<article class="product-card">
+    <a href="{% url 'store:product_detail' product.slug %}" class="product-card__link">
+        <div class="product-card__image">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+            {% else %}
+                <img src="{% static 'store/images/placeholder.png' %}" alt="{{ product.name }}">
+            {% endif %}
+
+            {% if product.is_on_sale %}
+                <span class="product-card__badge">-{{ product.discount_percent }}%</span>
+            {% endif %}
+
+            {% if product.stock == 0 %}
+                <span class="product-card__badge product-card__badge--out">Out of Stock</span>
+            {% endif %}
+        </div>
+
+        <div class="product-card__body">
+            <p class="product-card__category">{{ product.category.name }}</p>
+            <h3 class="product-card__title">{{ product.name }}</h3>
+
+            <div class="product-card__price">
+                {% if product.is_on_sale %}
+                    <span class="price-current">₹{{ product.current_price }}</span>
+                    <span class="price-old">₹{{ product.price }}</span>
+                {% else %}
+                    <span class="price-current">₹{{ product.price }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </a>
+
+    <div class="product-card__actions">
+        {% if product.stock > 0 %}
+            <form method="POST"
+                  action="{% url 'cart:add' product.id %}"
+                  class="js-add-to-cart product-card__add-form">
+                {% csrf_token %}
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="btn btn-primary btn-block">
+                    Add to Cart
+                </button>
+            </form>
+        {% else %}
+            <button type="button" class="btn btn-secondary btn-block" disabled>
+                Out of Stock
+            </button>
+        {% endif %}
+    </div>
+</article>

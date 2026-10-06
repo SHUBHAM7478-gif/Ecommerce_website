@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}All Products | My Store{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'store/css/store.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1 class="page-title">
+        {% if request.GET.q %}
+            Search results for "{{ request.GET.q }}"
+        {% elif current_category %}
+            {{ current_category.name }}
+        {% else %}
+            All Products
+        {% endif %}
+    </h1>
+    <p class="page-count">{{ products.paginator.count|default:products|length }} product{{ products|length|pluralize }}</p>
+</div>
+
+{# ---------- Filters ---------- #}
+<form method="GET" action="{% url 'store:product_list' %}" class="filter-bar">
+    <div class="filter-bar__search">
+        <input
+            type="text"
+            name="q"
+            value="{{ form.q.value|default:'' }}"
+            class="form-control"
+            placeholder="Search products...">
+    </div>
+
+    <select name="category" class="form-control">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+            <option value="{{ cat.slug }}"
+                    {% if request.GET.category == cat.slug %}selected{% endif %}>
+                {{ cat.name }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <input
+        type="number"
+        name="min_price"
+        value="{{ request.GET.min_price|default:'' }}"
+        class="form-control"
+        placeholder="Min ₹"
+        min="0">
+
+    <input
+        type="number"
+        name="max_price"
+        value="{{ request.GET.max_price|default:'' }}"
+        class="form-control"
+        placeholder="Max ₹"
+        min="0">
+
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="{% url 'store:product_list' %}" class="btn btn-secondary">Reset</a>
+</form>
+
+{# ---------- Product grid ---------- #}
+{% if products %}
+    <div class="product-grid">
+        {% for product in products %}
+            {% include 'store/partials/product_card.html' with product=product %}
+        {% endfor %}
+    </div>
+
+    {# ---------- Pagination ---------- #}
+    {% if products.has_other_pages %}
+        <nav class="pagination" aria-label="Pagination">
+            {% if products.has_previous %}
+                <a href="?{% querystring page=products.previous_page_number %}" class="pagination__link">← Prev</a>
+            {% else %}
+                <span class="pagination__link pagination__link--disabled">← Prev</span>
+            {% endif %}
+
+            <span class="pagination__info">
+                Page {{ products.number }} of {{ products.paginator.num_pages }}
+            </span>
+
+            {% if products.has_next %}
+                <a href="?{% querystring page=products.next_page_number %}" class="pagination__link">Next →</a>
+            {% else %}
+                <span class="pagination__link pagination__link--disabled">Next →</span>
+            {% endif %}
+        </nav>
+    {% endif %}
+
+{% else %}
+    <div class="empty-state">
+        <h2>No products found</h2>
+        <p>Try adjusting your filters or search terms.</p>
+        <a href="{% url 'store:product_list' %}" class="btn btn-primary">Clear Filters</a>
+    </div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,233 @@
+{% load static %}
+
+<article class="cart-line">
+
+    <!-- Product -->
+    <div class="cart-line__product">
+        <a href="{% url 'store:product_detail' item.product.slug %}" class="cart-line__img-link">
+            {% if item.product.image %}
+                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-line__img">
+            {% else %}
+                <img src="{% static 'store/images/placeholder.png' %}" alt="{{ item.product.name }}" class="cart-line__img">
+            {% endif %}
+        </a>
+        <div class="cart-line__info">
+            <a href="{% url 'store:product_detail' item.product.slug %}" class="cart-line__name">
+                {{ item.product.name }}
+            </a>
+            <p class="cart-line__cat">{{ item.product.category.name }}</p>
+            {% if item.product.stock < 5 and item.product.stock > 0 %}
+                <p class="cart-line__warn">⚠ Only {{ item.product.stock }} left</p>
+            {% endif %}
+            {% if item.exceeds_stock %}
+                <p class="cart-line__err">⚠ Only {{ item.product.stock }} available</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Price -->
+    <div class="cart-line__price">
+        {% if item.product.is_on_sale %}
+            <span class="cart-line__price-now">₹{{ item.product.current_price }}</span>
+            <span class="cart-line__price-old">₹{{ item.product.price }}</span>
+        {% else %}
+            <span class="cart-line__price-now">₹{{ item.product.price }}</span>
+        {% endif %}
+    </div>
+
+    <!-- Quantity -->
+    <div class="cart-line__qty">
+        <form method="POST" action="{% url 'cart:update' item.id %}" class="cart-qty js-qty-form">
+            {% csrf_token %}
+            <button type="button" class="cart-qty__btn" data-action="decrement" aria-label="Decrease">−</button>
+            <input type="number" name="quantity" value="{{ item.quantity }}"
+                   min="0" max="{{ item.product.stock }}" class="cart-qty__input" readonly>
+            <button type="button" class="cart-qty__btn" data-action="increment" aria-label="Increase">+</button>
+        </form>
+    </div>
+
+    <!-- Subtotal -->
+    <div class="cart-line__subtotal">
+        ₹{{ item.subtotal }}
+    </div>
+
+    <!-- Remove -->
+    <div class="cart-line__remove">
+        <form method="POST" action="{% url 'cart:remove' item.id %}">
+            {% csrf_token %}
+            <button type="submit" class="cart-line__x" aria-label="Remove item">×</button>
+        </form>
+    </div>
+
+</article>
+
+<style>
+.cart-line {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) 90px 130px 100px 44px;
+    gap: 12px;
+    align-items: center;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--acc-border);
+    transition: background 0.15s;
+}
+.cart-line:hover { background: #fafafa; }
+.cart-line:last-of-type { border-bottom: none; }
+
+/* Product */
+.cart-line__product {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+.cart-line__img-link { flex-shrink: 0; }
+.cart-line__img {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 10px;
+    background: var(--acc-soft);
+    border: 1px solid var(--acc-border);
+}
+.cart-line__info { min-width: 0; }
+.cart-line__name {
+    display: block;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--acc-text);
+    text-decoration: none;
+    margin-bottom: 3px;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.cart-line__name:hover { color: var(--acc-primary); }
+.cart-line__cat {
+    font-size: 0.75rem;
+    color: var(--acc-muted);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.cart-line__warn {
+    font-size: 0.76rem;
+    color: var(--acc-warning);
+    margin: 4px 0 0;
+}
+.cart-line__err {
+    font-size: 0.76rem;
+    color: var(--acc-danger);
+    margin: 4px 0 0;
+    font-weight: 500;
+}
+
+/* Price */
+.cart-line__price {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.cart-line__price-now { font-weight: 600; color: var(--acc-text); font-size: 0.92rem; }
+.cart-line__price-old {
+    font-size: 0.78rem;
+    color: #9ca3af;
+    text-decoration: line-through;
+}
+
+/* Quantity stepper */
+.cart-qty {
+    display: inline-flex;
+    border: 1px solid var(--acc-border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+}
+.cart-qty__btn {
+    width: 30px;
+    height: 36px;
+    border: none;
+    background: #fff;
+    color: #374151;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+}
+.cart-qty__btn:hover { background: #eef2ff; color: var(--acc-primary); }
+.cart-qty__input {
+    width: 42px;
+    height: 36px;
+    border: none;
+    border-left: 1px solid var(--acc-border);
+    border-right: 1px solid var(--acc-border);
+    text-align: center;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--acc-text);
+    background: #fff;
+    font-family: inherit;
+    -moz-appearance: textfield;
+}
+.cart-qty__input::-webkit-outer-spin-button,
+.cart-qty__input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* Subtotal */
+.cart-line__subtotal {
+    font-weight: 700;
+    color: var(--acc-text);
+    font-size: 0.98rem;
+    text-align: right;
+}
+
+/* Remove */
+.cart-line__remove { text-align: right; }
+.cart-line__x {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: none;
+    color: #9ca3af;
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+}
+.cart-line__x:hover { background: #fee2e2; color: var(--acc-danger); }
+
+/* ---------- Mobile ---------- */
+@media (max-width: 640px) {
+    .cart-line {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 16px;
+        border: 1px solid var(--acc-border);
+        border-radius: 10px;
+        margin: 12px;
+    }
+    .cart-line__price::before {
+        content: "Price: ";
+        color: var(--acc-muted);
+        font-weight: 400;
+        margin-right: 6px;
+    }
+    .cart-line__subtotal { text-align: left; }
+    .cart-line__subtotal::before {
+        content: "Subtotal: ";
+        color: var(--acc-muted);
+        font-weight: 400;
+        font-size: 0.9rem;
+        margin-right: 6px;
+    }
+    .cart-line__remove { text-align: left; }
+}
+</style>

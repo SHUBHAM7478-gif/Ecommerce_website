@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order #{{ order.id|stringformat:"06d" }} | My Store{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'orders/css/orders.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="order-detail-page">
+
+    {# ---------- Breadcrumb ---------- #}
+    <nav class="breadcrumb">
+        <a href="{% url 'store:home' %}">Home</a>
+        <span>/</span>
+        <a href="{% url 'orders:order_history' %}">My Orders</a>
+        <span>/</span>
+        <span class="breadcrumb__current">Order #{{ order.id|stringformat:"06d" }}</span>
+    </nav>
+
+    {# ---------- Header ---------- #}
+    <header class="order-detail-header">
+        <div>
+            <h1 class="order-detail-title">
+                Order #{{ order.id|stringformat:"06d" }}
+            </h1>
+            <p class="order-detail-date">
+                Placed on {{ order.created_at|date:"F d, Y · H:i" }}
+            </p>
+        </div>
+        <span class="badge badge--lg badge--{{ order.status|lower }}">
+            {{ order.status }}
+        </span>
+    </header>
+
+    <div class="order-detail-layout">
+
+        {# ============================================================
+           MAIN: Items + shipping
+           ============================================================ #}
+        <div class="order-detail-main">
+
+            {# ---------- Items ---------- #}
+            <section class="detail-section">
+                <h2 class="detail-section__heading">Items</h2>
+
+                <div class="order-items">
+                    {% for item in order.items.all %}
+                        <div class="order-item">
+                            <div class="order-item__image">
+                                {% if item.product.image %}
+                                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                                {% else %}
+                                    <img src="{% static 'store/images/placeholder.png' %}" alt="{{ item.product.name }}">
+                                {% endif %}
+                            </div>
+
+                            <div class="order-item__info">
+                                <a href="{% url 'store:product_detail' item.product.slug %}" class="order-item__name">
+                                    {{ item.product.name }}
+                                </a>
+                                <p class="order-item__meta">
+                                    ₹{{ item.price }} × {{ item.quantity }}
+                                </p>
+                            </div>
+
+                            <div class="order-item__subtotal">
+                                ₹{{ item.subtotal }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            {# ---------- Shipping address ---------- #}
+            <section class="detail-section">
+                <h2 class="detail-section__heading">Shipping Address</h2>
+                <div class="address-card">
+                    <p class="address-card__name">{{ order.full_name }}</p>
+                    <p class="address-card__line">{{ order.address }}</p>
+                    <p class="address-card__line">
+                        {{ order.city }}, {{ order.postal_code }}
+                    </p>
+                    <p class="address-card__line">{{ order.country }}</p>
+                    <p class="address-card__line address-card__line--email">
+                        {{ order.email }}
+                    </p>
+                </div>
+            </section>
+
+        </div>
+
+        {# ============================================================
+           SIDE: Totals + actions
+           ============================================================ #}
+        <aside class="order-detail-side">
+
+            <div class="detail-card">
+                <h3 class="detail-card__heading">Order Summary</h3>
+
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span>₹{{ order.get_total }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Shipping</span>
+                    <span class="text-muted">Free</span>
+                </div>
+
+                <div class="summary-divider"></div>
+
+                <div class="summary-row summary-total">
+                    <span>Total</span>
+                    <span>₹{{ order.get_total }}</span>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <h3 class="detail-card__heading">Actions</h3>
+                <div class="detail-card__actions">
+                    <a href="{% url 'orders:order_history' %}" class="btn btn-secondary btn-block">
+                        ← Back to Orders
+                    </a>
+                    <a href="{% url 'store:product_list' %}" class="btn btn-primary btn-block">
+                        Continue Shopping
+                    </a>
+                </div>
+            </div>
+
+            {# ---------- Order timeline ---------- #}
+            <div class="detail-card">
+                <h3 class="detail-card__heading">Status</h3>
+                <ul class="timeline">
+                    <li class="timeline__step timeline__step--done">
+                        <span class="timeline__dot"></span>
+                        <div class="timeline__content">
+                            <p class="timeline__title">Order Placed</p>
+                            <p class="timeline__date">{{ order.created_at|date:"M d, Y · H:i" }}</p>
+                        </div>
+                    </li>
+                    <li class="timeline__step {% if order.status == 'Shipped' or order.status == 'Delivered' %}timeline__step--done{% endif %}">
+                        <span class="timeline__dot"></span>
+                        <div class="timeline__content">
+                            <p class="timeline__title">Shipped</p>
+                            <p class="timeline__date">Pending</p>
+                        </div>
+                    </li>
+                    <li class="timeline__step {% if order.status == 'Delivered' %}timeline__step--done{% endif %}">
+                        <span class="timeline__dot"></span>
+                        <div class="timeline__content">
+                            <p class="timeline__title">Delivered</p>
+                            <p class="timeline__date">Pending</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+        </aside>
+
+    </div>
+
+</div>
+
+{% endblock %}
